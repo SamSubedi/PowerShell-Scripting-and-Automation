@@ -14,7 +14,7 @@ Managing users in Active Directory manually can be time-consuming, prone to erro
 - Creates department security groups if they do not exist
 - Adds users to their respective department security groups
 - Forces password change at first logon
-- 
+  
 3. User Experience Enhancements:
 - Configures roaming profiles so users can log in to any workstation and retain settings
 - Assigns a home drive (H:) for personal files
