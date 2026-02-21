@@ -80,7 +80,7 @@ Jane,Smith,Jane Smith,Female,Manager,Finance
 - Default passwords are set to Pineapple123$ and users are required to change them at first logon
 - Roaming profiles ensure users retain their settings across all workstations
 - Home drives provide personal storage mapped to H:
-- The script assumes all users belong under OU=Employee,DC=Subedi,DC=com. Adjust if your AD structure is different
+- The script assumes all users belong under OU=Employee,DC=abc,DC=com. Adjust if your AD structure is different
 - Test the script in a lab environment before deploying to production:
 
 # How to Run?
