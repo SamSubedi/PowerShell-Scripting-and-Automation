@@ -49,7 +49,7 @@ $SafeModeAdminPassword = Read-Host "Enter DSRM password" -AsSecureString
 
 # Promote to Domain Controller
 Install-ADDSForest `
-    -DomainName "sam.com" `
+    -DomainName "abc.com" `
     -CreateDnsDelegation:$false `
     -DatabasePath "C:\Windows\NTDS" `
     -DomainMode "Default" `
@@ -60,3 +60,4 @@ Install-ADDSForest `
     -SafeModeAdministratorPassword $SafeModeAdminPassword `
     -NoRebootOnCompletion:$false `
     -Force:$true
+
