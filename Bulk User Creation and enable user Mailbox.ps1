@@ -7,7 +7,7 @@ $csvPath = "C:\bulkuser.csv"
 $userList = Import-Csv -Path $csvPath
 
 # Default password for new users
-$password = ConvertTo-SecureString "Mango123$" -AsPlainText -Force
+$password = ConvertTo-SecureString "Mango123" -AsPlainText -Force
 
 # Ensure main Employee OU exists
 $employeeOU = "OU=Employee,DC=abc,DC=com"
@@ -130,6 +130,7 @@ $users = Get-ADUser -Filter * -SearchBase "OU=Employee,DC=abc,DC=com"
 foreach ($user in $users) {
     Enable-Mailbox -Identity $user.SamAccountName
 }
+
 
 
 
