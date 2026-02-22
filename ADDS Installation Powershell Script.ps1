@@ -4,9 +4,9 @@ Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
 # Step 2: Set DSRM password
 $SafeModeAdminPassword = Read-Host "Enter DSRM password" -AsSecureString
 
-# Step 3: Promote server to Domain Controller and create new forest sam.com
+# Step 3: Promote server to Domain Controller and create new forest abc.com
 Install-ADDSForest `
-    -DomainName "sam.com" `
+    -DomainName "abc.com" `
     -CreateDnsDelegation:$false `
     -DatabasePath "C:\Windows\NTDS" `
     -DomainMode "Default" `
@@ -17,4 +17,5 @@ Install-ADDSForest `
     -SafeModeAdministratorPassword $SafeModeAdminPassword `
     -NoRebootOnCompletion:$false `
     -Force:$true
+
 
