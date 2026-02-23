@@ -112,7 +112,15 @@ foreach($user in $userList) {
 
 # ----------------------------
 # DB creation (Exchange)
+# Script for creating Exchange mailbox databases and enabling mailboxes for users under the Employee OU
+# Notes / Prerequisites:
+# - Run this script ONLY after the Exchange Server is fully installed and configured
+# - Ensure the mailbox server named "Mail" exists
+# - Ensure the storage paths (EdbFilePath and LogFolderPath) exist and have proper permissions
+# - Users must already exist in Active Directory (e.g., created by the bulk user provisioning script)
+# This script creates 50 mailbox databases and enables mailboxes for all users under the Employee OU.
 # ----------------------------
+
 for ($i=1; $i -le 50; $i++) {
     $dbName = "DB$i"
     $edbFilePath = "F:\Program Files\Microsoft\Exchange Server\V15\Mailbox\$dbName\$dbName.edb"
@@ -127,6 +135,7 @@ $users = Get-ADUser -Filter * -SearchBase "OU=Employee,DC=abc,DC=com"
 foreach ($user in $users) {
     Enable-Mailbox -Identity $user.SamAccountName
 }
+
 
 
 
