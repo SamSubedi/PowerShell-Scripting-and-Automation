@@ -1,4 +1,8 @@
 
+# Script for creating bulk users, their OUs, and assigning them to the right department groups
+# The script first creates the Employee OU, then Department OUs with Users and Groups sub-OUs
+# Then creates department security groups, creates users from CSV, and finally adds users to the correct groups.
+
 Set-ExecutionPolicy Unrestricted
 Import-Module ActiveDirectory
 
@@ -66,10 +70,6 @@ foreach($user in $userList) {
     # Users OU for department
     $usersOU = "OU=Users,OU=$department,$employeeOU"
 
-    # Roaming profile and Home Directory
-    $profilePath = "\\DC\Profiles\$sam"
-    $homePath = "\\DC\Home\$sam"
-
     # Create user if not exists
     if (-not (Get-ADUser -Filter {SamAccountName -eq $sam})) {
         New-ADUser -Name $FullName `
@@ -82,11 +82,8 @@ foreach($user in $userList) {
                    -Title $JobTitle `
                    -Enabled $true `
                    -ChangePasswordAtLogon $true `
-                   -ProfilePath $profilePath `
-                   -HomeDirectory $homePath `
-                   -HomeDrive "H:"
-
-        Write-Host "Created user $FullName in $department Users OU with roaming profile and home drive" -ForegroundColor Green
+                  
+        Write-Host "Created user $FullName in $department Users OU" -ForegroundColor Green
     } else {
         Write-Warning "User $sam already exists"
     }
@@ -130,6 +127,7 @@ $users = Get-ADUser -Filter * -SearchBase "OU=Employee,DC=abc,DC=com"
 foreach ($user in $users) {
     Enable-Mailbox -Identity $user.SamAccountName
 }
+
 
 
 
