@@ -1,7 +1,8 @@
-
+# -------------------------------------------------------------------------------------------------------------
 # Script for creating bulk users, their OUs, and assigning them to the right department groups
 # The script first creates the Employee OU, then Department OUs with Users and Groups sub-OUs
 # Then creates department security groups, creates users from CSV, and finally adds users to the correct groups.
+# -------------------------------------------------------------------------------------------------------------
 
 Set-ExecutionPolicy Unrestricted
 Import-Module ActiveDirectory
@@ -106,11 +107,69 @@ foreach($user in $userList) {
     }
 }
 
+
+
+
+# ----------------------------------------------------------------------------------------
+# Script for configuring Home Drives and Roaming Profiles for existing AD users
+# Description:
+# - Assigns each user a Home Drive (H:) and a Home Folder on the file server
+# - Sets Roaming Profile paths for users
+# Prerequisites:
+# - Run only after the Domain Controller and file server (FS) are deployed
+# - Ensure file shares exist on FS:
+#       \\FS\Home
+#       \\FS\Profiles
+# - Ensure proper NTFS permissions for user folders
+# - Users must already exist in Active Directory (e.g., created by AD_BulkUserProvisioning.ps1)
+# ---------------------------------------------------------------------------------------------
+
+Import-Module ActiveDirectory
+# File server shares
+$homeShare    = "\\FS\Home"
+$profileShare = "\\FS\Profiles"
+
+# Get all users under Employee OU
+$employeeOU = "OU=Employee,DC=abc,DC=com"
+$users = Get-ADUser -Filter * -SearchBase $employeeOU
+
+foreach ($user in $users) {
+
+    $sam = $user.SamAccountName
+    $FullName = $user.Name
+
+    # Home drive and folder path
+    $homePath    = "$homeShare\$sam"
+    $profilePath = "$profileShare\$sam"
+
+    # Create home folder if it doesn't exist
+    if (-not (Test-Path $homePath)) {
+        New-Item -Path $homePath -ItemType Directory -Force | Out-Null
+        Write-Host "Created home folder for $FullName at $homePath" -ForegroundColor Green
+    }
+
+    # Create profile folder if it doesn't exist
+    if (-not (Test-Path $profilePath)) {
+        New-Item -Path $profilePath -ItemType Directory -Force | Out-Null
+        Write-Host "Created profile folder for $FullName at $profilePath" -ForegroundColor Green
+    }
+
+    # Set Home Drive (H:) and Home Folder
+    try {
+        Set-ADUser -Identity $sam `
+                   -HomeDirectory $homePath `
+                   -HomeDrive "H:" `
+                   -ProfilePath $profilePath
+        Write-Host "Configured Home Drive and Roaming Profile for $FullName" -ForegroundColor Cyan
+    }
+    catch {
+        Write-Warning "Failed to set Home Drive / Profile for $FullName: $_"
+    }
+}
  
 
 
-
-# ----------------------------
+#----------------------------------------------------------------------------------------------------
 # DB creation (Exchange)
 # Script for creating Exchange mailbox databases and enabling mailboxes for users under the Employee OU
 # Notes / Prerequisites:
@@ -119,8 +178,12 @@ foreach($user in $userList) {
 # - Ensure the storage paths (EdbFilePath and LogFolderPath) exist and have proper permissions
 # - Users must already exist in Active Directory (e.g., created by the bulk user provisioning script)
 # This script creates 50 mailbox databases and enables mailboxes for all users under the Employee OU.
-# ----------------------------
+#----------------------------------------------------------------------------------------------------
 
+# Import Active Directory module
+Import-Module ActiveDirectory
+
+# Create 50 mailbox databases
 for ($i=1; $i -le 50; $i++) {
     $dbName = "DB$i"
     $edbFilePath = "F:\Program Files\Microsoft\Exchange Server\V15\Mailbox\$dbName\$dbName.edb"
@@ -128,13 +191,12 @@ for ($i=1; $i -le 50; $i++) {
     New-MailboxDatabase -Name $dbName -Server Mail -EdbFilePath $edbFilePath -LogFolderPath $logFolderPath
 }
 
-# ----------------------------
 # Enable mailbox for all users under Employee OU
-# ----------------------------
 $users = Get-ADUser -Filter * -SearchBase "OU=Employee,DC=abc,DC=com"
 foreach ($user in $users) {
     Enable-Mailbox -Identity $user.SamAccountName
 }
+
 
 
 
